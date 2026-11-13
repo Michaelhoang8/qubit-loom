@@ -24,6 +24,8 @@ function status(s) {
 function controls() {
   for (const n of document.querySelectorAll('button,input,select')) n.disabled = busy;
   $('cancel').disabled = !worker;
+  $('order-close').disabled = false;
+  $('method-close').disabled = false;
   $('add').disabled = busy || draft.gates.length >= 100;
   $('previous').disabled = busy || !result || step === 0;
   $('next').disabled = busy || !result || step === result.frames.length - 1;
@@ -190,6 +192,7 @@ function renderCircuit() {
           width: 38,
           height: 34,
           rx: 3,
+          class: result && i < step ? 'applied' : '',
           fill: result && i < step ? '#d3e4f5' : '#eff5fc',
           stroke: '#8cadcf',
         }),
@@ -211,6 +214,7 @@ function renderCircuit() {
       if (!result || busy) return;
       step = i + 1;
       render();
+      root.querySelectorAll('g[role="button"]')[i]?.focus({ preventScroll: true });
     };
     group.addEventListener('click', inspect);
     group.addEventListener('keydown', (e) => {
@@ -440,3 +444,8 @@ $('file').addEventListener('change', async () => {
 });
 editor();
 run();
+
+for (const name of ['order', 'method']) {
+  $(name + '-open').addEventListener('click', () => $(name + '-panel').showModal());
+  $(name + '-close').addEventListener('click', () => $(name + '-panel').close());
+}

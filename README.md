@@ -4,6 +4,10 @@ A local quantum-circuit workbench with complex statevector simulation, gate-by-g
 
 ![Qubit Loom](docs/workbench.png)
 
+## Interface
+
+Gate controls sit directly above the circuit. Gate ordering and model notes open separately, while probabilities and reduced states remain below the shared step control. Gates support pointer and keyboard inspection, retain keyboard focus after inspection, and distinguish applied single-qubit gates by fill. Circuit and amplitude tables scroll within their containers on narrow screens.
+
 ## Run
 
 Requires Python 3.10+. No runtime dependencies, API keys, or quantum hardware connection.
