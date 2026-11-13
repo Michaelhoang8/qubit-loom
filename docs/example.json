@@ -1,0 +1,16 @@
+{
+  "qubits": 2,
+  "gates": [
+    {
+      "kind": "H",
+      "target": 0
+    },
+    {
+      "kind": "CX",
+      "control": 0,
+      "target": 1
+    }
+  ],
+  "shots": 4096,
+  "seed": 17
+}

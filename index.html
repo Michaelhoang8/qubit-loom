@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Qubit Loom</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="#">qubit loom <span>⊗</span></a
+      ><span>QUANTUM CIRCUITS / STATEVECTOR NOTEBOOK</span
+      ><label class="file"
+        >Open circuit<input
+          id="file"
+          type="file"
+          accept="application/json,.json"
+          aria-label="Open circuit"
+      /></label>
+    </header>
+    <main>
+      <div class="intro">
+        <p class="eyebrow">AMPLITUDES FIRST. OUTCOMES SECOND.</p>
+        <h1>Watch a possibility<br />take shape.</h1>
+        <p>
+          Build a circuit. Follow its complex amplitudes.<br />Find the difference between
+          interference and chance.
+        </p>
+      </div>
+      <div class="settings">
+        <label
+          >Study<select id="example">
+            <option value="bell">Bell pair</option>
+            <option value="ghz">GHZ triplet</option>
+            <option value="interference">Phase interference</option>
+            <option value="phase">A complex phase</option>
+            <option value="empty">Empty circuit</option>
+          </select></label
+        ><label>Qubits<input id="qubits" type="number" min="1" max="6" value="2" /></label
+        ><label>Shots<input id="shots" type="number" min="1" max="100000" value="4096" /></label
+        ><label>Seed<input id="seed" type="number" min="1" max="4294967295" value="17" /></label
+        ><button id="run" class="primary">Simulate ↗</button
+        ><button id="cancel" disabled>Cancel</button>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section class="circuit">
+        <div class="section-head">
+          <h2>The circuit</h2>
+          <span id="circuit-count"></span>
+        </div>
+        <div class="circuit-scroll">
+          <svg
+            id="circuit-svg"
+            role="group"
+            aria-label="Quantum circuit with inspectable gate steps"
+          ></svg>
+        </div>
+        <details>
+          <summary>Edit gates</summary>
+          <div class="gate-builder">
+            <label>Gate<select id="gate"></select></label
+            ><label>Target<select id="target"></select></label
+            ><label id="control-label">Control / other<select id="control"></select></label
+            ><label id="angle-label"
+              >Angle, radians<input
+                id="angle"
+                type="number"
+                step="any"
+                value="1.5707963267948966" /></label
+            ><button id="add">Append gate</button>
+          </div>
+          <p class="note">
+            CX/CZ use a control and target; SWAP exchanges the two chosen qubits. Remove gates using
+            a qubit before reducing the register size. Rotations use radians.
+          </p>
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Step</th>
+                  <th>Gate</th>
+                  <th>Qubits</th>
+                  <th>Angle</th>
+                  <th>Order</th>
+                </tr>
+              </thead>
+              <tbody id="gates"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+      <section id="results" hidden>
+        <div class="stepper">
+          <button id="previous" aria-label="Previous gate">←</button
+          ><label for="step">After gate <output id="step-label"></output></label
+          ><input id="step" type="range" min="0" value="0" aria-label="Circuit step" /><button
+            id="next"
+            aria-label="Next gate"
+          >
+            →</button
+          ><span id="norm"></span>
+        </div>
+        <div class="analysis">
+          <section>
+            <div class="section-head">
+              <h2>Possible outcomes</h2>
+              <span id="shot-note"></span>
+            </div>
+            <div id="probabilities"></div>
+            <p class="note">
+              Basis labels read q[n−1] … q0. Qubit 0 is the least significant bit. Blue bars show
+              exact probabilities; sample counts appear only at the final step.
+            </p>
+          </section>
+          <section>
+            <h2>One qubit at a time</h2>
+            <div id="reduced"></div>
+            <p class="note">
+              Bloch coordinates describe each reduced state. Purity 1 means that qubit is
+              unentangled with the rest of this pure global state; lower purity indicates
+              entanglement across that split. This is not a hardware noise model.
+            </p>
+          </section>
+        </div>
+        <details>
+          <summary>Complex amplitudes <span id="amplitude-count"></span></summary>
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Basis</th>
+                  <th>Real</th>
+                  <th>Imaginary</th>
+                  <th>Probability</th>
+                  <th>Phase, radians</th>
+                </tr>
+              </thead>
+              <tbody id="amplitudes"></tbody>
+            </table>
+          </div>
+          <p class="note">
+            The phase of a zero-amplitude state is undefined. Raw amplitudes retain floating-point
+            roundoff; probabilities and reduced states are normalized by the frame's squared norm.
+          </p>
+        </details>
+        <div class="exports">
+          <button id="save">Save circuit</button><button id="csv">Export selected state CSV</button
+          ><button id="report">Export evidence JSON</button
+          ><button id="qasm">Export unitary OpenQASM</button>
+        </div>
+      </section>
+      <details class="method">
+        <summary>What this notebook models</summary>
+        <p>
+          All qubits start at |0⟩. H, X, Y, Z, S, T, RX, RY, RZ, CX, CZ, and SWAP evolve a pure
+          complex statevector. Every gate has a saved frame. A partial trace gives each qubit's
+          reduced density matrix, Bloch coordinates, and purity.
+        </p>
+        <p>
+          The shot experiment samples the final computational-basis distribution using a
+          reproducible xorshift32 generator. It does not collapse the displayed state, add
+          measurement gates, model noise, or run on quantum hardware. Shot counts are simulated
+          observations, not new amplitude calculations.
+        </p>
+        <p>
+          Limits: 1–6 qubits, 100 gates, 1–100,000 shots, rotation angles within ±8π, and circuit
+          imports up to 100 KB. OpenQASM 2 export contains the unitary circuit only, with no
+          classical register or measurements; shots and seed are saved in JSON. Save before
+          refreshing.
+        </p>
+      </details>
+    </main>
+    <footer>
+      <span>LOCAL COMPUTATION / NO HARDWARE CONNECTION</span
+      ><span>COMPLEX NUMBERS, VISIBLE CONSEQUENCES.</span>
+    </footer>
+  </body>
+</html>
