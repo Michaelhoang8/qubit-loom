@@ -658,3 +658,27 @@ dialog p {
     min-width: 0;
   }
 }
+.qubit-body {
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+.bloch-view {
+  display: block;
+  width: 125px;
+  height: 125px;
+}
+.qubit-axes {
+  min-width: 0;
+}
+@media (max-width: 550px) {
+  .qubit-body {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .bloch-view {
+    width: 100px;
+    height: 100px;
+  }
+}

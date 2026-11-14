@@ -8,6 +8,10 @@ A local quantum-circuit workbench with complex statevector simulation, gate-by-g
 
 Gate controls sit directly above the circuit. Gate ordering and model notes open separately, while probabilities and reduced states remain below the shared step control. Gates support pointer and keyboard inspection, retain keyboard focus after inspection, and distinguish applied single-qubit gates by fill. Circuit and amplitude tables scroll within their containers on narrow screens.
 
+Each reduced state includes an orthographic Bloch-sphere projection with three coordinate-plane rings and its actual Bloch vector. The numerical axes remain beside it; projected vector length is not the three-dimensional magnitude.
+
+![Complex-phase reduced state](docs/bloch.png)
+
 ## Run
 
 Requires Python 3.10+. No runtime dependencies, API keys, or quantum hardware connection.

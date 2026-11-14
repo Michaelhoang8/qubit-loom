@@ -226,6 +226,75 @@ function renderCircuit() {
     root.append(group);
   });
 }
+function blochView(q) {
+  const root = svg('svg', {
+    viewBox: '0 0 140 140',
+    class: 'bloch-view',
+    role: 'img',
+    'aria-label': `Qubit ${q.qubit} Bloch vector x ${q.bloch.x.toFixed(4)}, y ${q.bloch.y.toFixed(4)}, z ${q.bloch.z.toFixed(4)}. Orthographic projection.`,
+  });
+  const project = ([x, y, z]) => [
+    70 + (46 * (x - z)) / Math.sqrt(2),
+    70 - (46 * (x + 2 * y + z)) / Math.sqrt(6),
+  ];
+  const defs = svg('defs', {}),
+    gradient = svg('radialGradient', {
+      id: `bloch-surface-${q.qubit}`,
+      cx: '.35',
+      cy: '.25',
+      r: '.8',
+    });
+  gradient.append(
+    svg('stop', { offset: '0', 'stop-color': '#fff' }),
+    svg('stop', { offset: '1', 'stop-color': '#d8e5f5' }),
+  );
+  defs.append(gradient);
+  root.append(
+    defs,
+    svg('circle', {
+      cx: 70,
+      cy: 70,
+      r: 46,
+      fill: `url(#bloch-surface-${q.qubit})`,
+      stroke: '#b5cbe4',
+    }),
+  );
+  for (let plane = 0; plane < 3; plane++) {
+    const points = Array.from({ length: 65 }, (_, i) => {
+      const a = (i / 64) * Math.PI * 2,
+        c = Math.cos(a),
+        s = Math.sin(a);
+      return project(plane === 0 ? [c, s, 0] : plane === 1 ? [c, 0, s] : [0, c, s]).join(',');
+    }).join(' ');
+    root.append(
+      svg('polyline', {
+        points,
+        fill: 'none',
+        stroke: '#9cb9d9',
+        'stroke-width': 0.6,
+        opacity: 0.6,
+      }),
+    );
+  }
+  for (const [label, axis] of [
+    ['x', [1, 0, 0]],
+    ['y', [0, 1, 0]],
+    ['z', [0, 0, 1]],
+  ]) {
+    const [x, y] = project(axis);
+    root.append(
+      svg('line', { x1: 70, y1: 70, x2: x, y2: y, stroke: '#86a5c8', 'stroke-width': 0.8 }),
+      svg('text', { x: x + (x < 70 ? -10 : 5), y: y - 3, fill: '#5e7b9b', 'font-size': 9 }, label),
+    );
+  }
+  const [x, y] = project([q.bloch.x, q.bloch.y, q.bloch.z]);
+  root.append(
+    svg('circle', { cx: 70, cy: 70, r: 2, fill: '#8da7c5' }),
+    svg('line', { x1: 70, y1: 70, x2: x, y2: y, stroke: '#355e9b', 'stroke-width': 2.5 }),
+    svg('circle', { cx: x, cy: y, r: 4, fill: '#355e9b', stroke: '#fff', 'stroke-width': 1.5 }),
+  );
+  return root;
+}
 function render() {
   if (!result) return;
   const f = result.frames[step],
@@ -262,6 +331,12 @@ function render() {
     heading.className = 'qubit-head';
     heading.append(el('span', `purity ${q.purity.toFixed(5)} · P(1) ${q.p1.toFixed(4)}`));
     card.append(heading);
+    const body = el('div');
+    body.className = 'qubit-body';
+    const axes = el('div');
+    axes.className = 'qubit-axes';
+    body.append(blochView(q), axes);
+    card.append(body);
     for (const axis of ['x', 'y', 'z']) {
       const row = el('div');
       row.className = 'axis-row';
@@ -275,7 +350,7 @@ function render() {
         svg('circle', { cx: position, cy: 8, r: 3, fill: '#3f72a8' }),
       );
       row.append(plot, el('code', q.bloch[axis].toFixed(4)));
-      card.append(row);
+      axes.append(row);
     }
     $('reduced').append(card);
   }
